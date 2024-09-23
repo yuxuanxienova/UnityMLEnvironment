@@ -1,0 +1,14 @@
+Logs/
+Packages/
+UserSettings/
+Library/
+ProjectSettings/
+Temp/
+Build/
+Assets/TextMesh Pro/
+*.meta
+.vs/
+.vscode/
+obj/
+*.suo
+*.vsidx
