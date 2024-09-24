@@ -844,7 +844,7 @@ MonoBehaviour:
   agentController: {fileID: 1202991329}
   agentRewardCalculator: {fileID: 1202991327}
   client: {fileID: 1973164832}
-  actionUpdateInterval: 0.2
+  actionUpdateInterval: 0.1
   transitionPublishUpdateInterval: 0.1
   id: 0
 --- !u!1 &1462856800
