@@ -30,7 +30,9 @@ class Trainner:
         self.action_dim = 2
         self.trainTime=1000
         self.log_dir= os.path.join(os.path.dirname(__file__), 'logs/' + self.task_name + '/')
+        os.makedirs(self.log_dir, exist_ok=True)
         self.save_dir = os.path.join(os.path.dirname(__file__), 'saved_model/' + self.task_name + '/')
+        os.makedirs(self.save_dir, exist_ok=True)
         self.save_interval = 1000
         self.log_interval = 20
         # initialize components
