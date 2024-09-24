@@ -13,7 +13,31 @@ class MsgPong(MsgBase):
         super().__init__()
         self.protoName = "MsgPong"
         
-        
+#---------------Agent Message----------------
+class TransitionMsg(MsgBase):
+    def __init__(self):
+        super().__init__()
+        self.protoName = "TransitionMsg"
+        self.state = []
+        self.action = []
+        self.reward = []
+        self.next_state = []
+        self.trancated_flag = False 
+class SampleActionRequestMsg(MsgBase):
+    def __init__(self):
+        super().__init__()
+        self.protoName = "SampleActionRequestMsg"
+        self.state = []
+class SampleActionResponseMsg(MsgBase):
+    def __init__(self):
+        super().__init__()
+        self.protoName = "SampleActionResponseMsg"
+        self.action = []
+class EpisodicRewardMsg(MsgBase):
+    def __init__(self):
+        super().__init__()
+        self.protoName = "EpisodicRewardMsg"
+        self.reward = 0
 #---------------Test Message----------------
 class MyMessage(MsgBase):
     def __init__(self):

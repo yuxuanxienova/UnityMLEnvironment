@@ -16,6 +16,8 @@ public class Client : MonoBehaviour
 
         //----test----
         NetManager.AddMsgListener("MsgTest", OnMsgTest);
+        //Connect
+        NetManager.Connect(SERVER_HOST, SERVER_PORT);
 
     }
 
@@ -67,7 +69,51 @@ public class Client : MonoBehaviour
 
         }
     }
+
+    //-----------------------------------Publishers--------------------------------
+    public void CallPublishEpisodicReward(float reward)
+    {
+        EpisodicRewardMsg msg = new EpisodicRewardMsg
+        {
+            reward = reward
+        };
+        // Await the PublishAsync method to complete asynchronously
+        NetManager.Send(msg);
+
+    }
+    public void CallPublishEventSampleAction(float[] obs_array, int id_agent)
+    {
+        SampleActionRequestMsg msg = new SampleActionRequestMsg
+        {
+            state = obs_array
+        };
+        // Await the PublishAsync method to complete asynchronously
+        NetManager.Send(msg);
+    }
+    public void CallPublishTransition(float[] state_tminus1, float[] action_tminus1, float[] reward_tminus1, float[] state_t, bool trancated_flag)
+    {
+        TransitionMsg msg = new TransitionMsg
+        {
+            state = state_tminus1,
+            action = action_tminus1,
+            reward = reward_tminus1,
+            next_state = state_t,
+            trancated_flag = trancated_flag,
+        };
+        // Await the PublishAsync method to complete asynchronously
+        NetManager.Send(msg);
+    }
+
     //---------------------------------------Test------------------------------------ 
+    public void OnTestSendTrainsitionMsgClicked() 
+    {
+        float[] state = { 1, 1, 1 };
+        float[] action = { 1, 1, };
+        float[] reward = { 1, };
+        float[] next_state = { 1, 1, };
+        bool trancated_flag = false;
+        CallPublishTransition(state,action,reward,next_state,trancated_flag);
+    }
     public void TestMain()
     {
 

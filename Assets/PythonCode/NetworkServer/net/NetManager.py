@@ -11,7 +11,7 @@ from net.MsgBase import MsgBase
 from proto.Messages import MsgPing, MsgPong , MsgTest
 class EventHandler:
     @staticmethod
-    def on_disconnect(c):
+    def on_disconnect():
         print("Close")
 
     @staticmethod
@@ -22,13 +22,13 @@ class EventHandler:
     @staticmethod
     def check_ping():
         # Current timestamp
-        time_now = NetManager.get_time_stamp()
+        time_now = NetManagerServer.get_time_stamp()
 
         # Iterate and remove
-        for s in list(NetManager.clients.values()):
-            if time_now - s.last_ping_time > NetManager.ping_interval * 4:
+        for s in list(NetManagerServer.clients.values()):
+            if time_now - s.last_ping_time > NetManagerServer.ping_interval * 4:
                 print(f"Ping Close {s.socket.getpeername()}")
-                NetManager.close(s)
+                NetManagerServer.close(s)
                 # Since 'close' removes the client from the list,
                 # we break out of the loop to avoid iteration errors
                 break
@@ -36,9 +36,9 @@ class MsgHandler:
     @staticmethod
     def MsgPing(client:ClientState, msg_base):
         print("MsgPing")
-        client.last_ping_time = NetManager.get_time_stamp()
+        client.last_ping_time = NetManagerServer.get_time_stamp()
         msg_pong = MsgPong()
-        NetManager.send(client, msg_pong)
+        NetManagerServer.send(client, msg_pong)
         
     @staticmethod
     def MsgTest(client:ClientState, msg_base):
@@ -46,18 +46,19 @@ class MsgHandler:
         msg_test = MsgTest()
         msg_test.str = "Hi from server"
         msg_test.num = 123
-        NetManager.send(client, msg_test)
+        NetManagerServer.send(client, msg_test)
         
-    
-        
+    # @staticmethod
+    # def TransitionMsg(client:ClientState, msg_base):
+    #     # print("[Msg Received][client:{0}]TransitionMsg".format(client.client_address) + str(msg_base.state) + str(msg_base.action) + str(msg_base.reward) + str(msg_base.next_state) + str(msg_base.trancated_flag))
 
 
-class NetManager:
+class NetManagerServer:
     # Listening socket
     listen_fd = None
 
     # Client sockets and states
-    clients = {}
+    clients:Dict[socket.socket,ClientState] = {}
 
     # Select read list
     check_read = []
@@ -68,52 +69,52 @@ class NetManager:
     @staticmethod
     def start_loop(listen_port):
         # Create socket
-        NetManager.listen_fd = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        NetManager.listen_fd.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        NetManagerServer.listen_fd = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        NetManagerServer.listen_fd.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
         # Bind
-        NetManager.listen_fd.bind(('0.0.0.0', listen_port))
+        NetManagerServer.listen_fd.bind(('0.0.0.0', listen_port))
 
         # Listen
-        NetManager.listen_fd.listen()
+        NetManagerServer.listen_fd.listen()
         print("Server started successfully")
 
         # Main loop
         while True:
-            NetManager.reset_check_read()
+            NetManagerServer.reset_check_read()
 
             # Use select to wait for sockets to be ready
-            read_sockets, _, _ = select.select(NetManager.check_read, [], [], 1)
+            read_sockets, _, _ = select.select(NetManagerServer.check_read, [], [], 1)
 
             for s in read_sockets:
-                if s == NetManager.listen_fd:
-                    NetManager.read_listen_fd()
+                if s == NetManagerServer.listen_fd:
+                    NetManagerServer.read_listen_fd()
                 else:
-                    NetManager.read_client_fd(s)
+                    NetManagerServer.read_client_fd(s)
 
             # Handle timeouts
-            NetManager.timer()
+            NetManagerServer.timer()
 
     @staticmethod
     def reset_check_read():
-        NetManager.check_read = [NetManager.listen_fd]
-        for state in NetManager.clients.values():
-            NetManager.check_read.append(state.socket)
+        NetManagerServer.check_read = [NetManagerServer.listen_fd]
+        for state in NetManagerServer.clients.values():
+            NetManagerServer.check_read.append(state.socket)
 
     @staticmethod
     def read_listen_fd():
         try:
-            client_fd, addr = NetManager.listen_fd.accept()
+            client_fd, addr = NetManagerServer.listen_fd.accept()
             print(f"Accepted connection from {addr}")
             state = ClientState(client_socket=client_fd)
-            state.last_ping_time = NetManager.get_time_stamp()
-            NetManager.clients[client_fd] = state
+            state.last_ping_time = NetManagerServer.get_time_stamp()
+            NetManagerServer.clients[client_fd] = state
         except socket.error as ex:
             print(f"Accept failed: {ex}")
 
     @staticmethod
     def read_client_fd(client_fd):
-        state:ClientState = NetManager.clients.get(client_fd)
+        state:ClientState = NetManagerServer.clients.get(client_fd)
         read_buffer = state.read_buffer
 
        
@@ -122,20 +123,20 @@ class NetManager:
             data = client_fd.recv(read_buffer.remain)
             if not data:
                 print(f"Client disconnected: {client_fd.getpeername()}")
-                NetManager.close(state)
+                NetManagerServer.close(state)
                 return
             # Write data to buffer
             read_buffer.write(data, 0, len(data))
 
             # Process received data
-            NetManager.on_receive_data(state)
+            NetManagerServer.on_receive_data(state)
 
             # Move buffer if necessary
             read_buffer.check_and_move_bytes()
 
         except socket.error as ex:
             print(f"Receive socket exception: {ex}")
-            NetManager.close(state)
+            NetManagerServer.close(state)
 
     @staticmethod
     def close(state):
@@ -144,7 +145,7 @@ class NetManager:
 
         # Close socket and remove from clients
         state.socket.close()
-        del NetManager.clients[state.socket]
+        del NetManagerServer.clients[state.socket]
 
     @staticmethod
     def on_receive_data(state):
@@ -168,7 +169,7 @@ class NetManager:
             proto_name, name_count = MsgBase.decode_name(read_buffer.bytes, read_buffer.read_idx)
             if not proto_name:
                 print("Failed to decode message name")
-                NetManager.close(state)
+                NetManagerServer.close(state)
                 return
 
             read_buffer.read_idx += name_count
@@ -220,7 +221,7 @@ class NetManager:
             cs.socket.sendall(send_bytes)
         except socket.error as ex:
             print(f"Socket closed on sendall: {ex}")
-            NetManager.close(cs)
+            NetManagerServer.close(cs)
 
     @staticmethod
     def get_time_stamp():

@@ -11,8 +11,34 @@ public class MsgPong : MsgBase
 {
     public MsgPong() { protoName = "MsgPong"; }
 }
+//---------------Agent Messages-----------------
+public class TransitionMsg : MsgBase 
+{
+    public TransitionMsg() { protoName = "TransitionMsg"; }
+    public float[] state;
+    public float[] action;
+    public float[] reward;
+    public float[] next_state;
+    public bool trancated_flag;
+}
 
+public class SampleActionRequestMsg : MsgBase
+{
+    public SampleActionRequestMsg() { protoName = "SampleActionRequestMsg"; }
+    public float[] state;
+}
 
+public class SampleActionResponseMsg : MsgBase
+{
+    public SampleActionResponseMsg() { protoName = "SampleActionResponseMsg"; }
+    public float[] action;
+}
+
+public class EpisodicRewardMsg : MsgBase
+{
+    public EpisodicRewardMsg() { protoName = "EpisodicRewardMsg"; }
+    public float reward;
+}
 //--------------Test Message----------
 public class MsgTest : MsgBase
 {

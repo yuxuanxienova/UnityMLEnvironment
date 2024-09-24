@@ -58,11 +58,35 @@
     <Analyzer Include="C:\unityEditor\2022.3.4f1c1\Editor\Data\Tools\Unity.SourceGenerators\Unity.Properties.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\Utilities\ExtensionMethods.cs" />
+    <Compile Include="Assets\Scripts\RLAgent\Agent.cs" />
+    <Compile Include="Assets\Scripts\RLAgent\3DBall\BallAgentObserver.cs" />
+    <Compile Include="Assets\Scripts\Algo\IK\IK_LF.cs" />
+    <Compile Include="Assets\Scripts\RLAgent\AgentControllerBase.cs" />
     <Compile Include="Assets\Scripts\NetworkClient\Client.cs" />
     <Compile Include="Assets\Scripts\NetworkClient\MsgBase.cs" />
+    <Compile Include="Assets\Scripts\RLAgent\OrientationCubeController.cs" />
+    <Compile Include="Assets\Scripts\RLAgent\PendulumAgent\PendulumResetController.cs" />
+    <Compile Include="Assets\Scripts\Algo\IK\IK_RH.cs" />
+    <Compile Include="Assets\Scripts\RLAgent\PendulumAgent\PendulumAgentRewardCalculator.cs" />
+    <Compile Include="Assets\Scripts\Algo\IK\IK_RF.cs" />
+    <Compile Include="Assets\Scripts\RLAgent\QuadrupedAgent\QuadrupedAgentController.cs" />
+    <Compile Include="Assets\Scripts\RLAgent\DirectionIndicator.cs" />
     <Compile Include="Assets\Scripts\NetworkClient\proto\Messages.cs" />
+    <Compile Include="Assets\Scripts\RLAgent\PendulumAgent\PendulumAgentObserver.cs" />
+    <Compile Include="Assets\Scripts\RLAgent\3DBall\BallAgentController.cs" />
     <Compile Include="Assets\Scripts\NetworkClient\NetManager.cs" />
+    <Compile Include="Assets\Scripts\RLAgent\3DBall\BallAgentRewardCalculator.cs" />
+    <Compile Include="Assets\Scripts\Algo\IK\IK_LH.cs" />
+    <Compile Include="Assets\Scripts\RLAgent\QuadrupedAgent\QuadrupedAgentObserver.cs" />
+    <Compile Include="Assets\Scripts\RLAgent\PendulumAgent\PendulumAgentController.cs" />
+    <Compile Include="Assets\Scripts\RLAgent\QuadrupedAgent\QuadrupedAgentRewardCalculator.cs" />
+    <Compile Include="Assets\Scripts\RLAgent\GroundContactCustom.cs" />
+    <Compile Include="Assets\Scripts\RLAgent\AgentManager.cs" />
     <Compile Include="Assets\Scripts\NetworkClient\ByteArray.cs" />
+    <Compile Include="Assets\Scripts\Utilities\Singleton.cs" />
+    <Compile Include="Assets\Scripts\RLAgent\AgentObserverBase.cs" />
+    <Compile Include="Assets\Scripts\RLAgent\AgentRewardCalculatorBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
@@ -71,6 +95,8 @@
     <None Include="Assets\TextMesh Pro\Shaders\TMPro_Mobile.cginc" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF SSD.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface-Mobile.shader" />
+    <None Include="Assets\Materials\GridPatternShader.shader" />
+    <None Include="Assets\Materials\ShaderRadialGrid.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface.shader" />
     <None Include="Assets\TextMesh Pro\Sprites\EmojiOne Attribution.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Custom-Atlas.shader" />
@@ -84,6 +110,7 @@
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF Overlay.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Mobile.shader" />
     <None Include="Assets\TextMesh Pro\Fonts\LiberationSans - OFL.txt" />
+    <None Include="Assets\Materials\ShaderOutline.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Sprite.shader" />
   </ItemGroup>
