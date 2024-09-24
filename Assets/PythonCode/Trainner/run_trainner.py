@@ -83,7 +83,7 @@ class Trainner:
         # Initialize time trackers for each function
         last_network_update = time.time()
         last_info_update = time.time()
-        network_interval = 0.2  # Interval in seconds for updateNetwork
+        network_interval = 0.1  # Interval in seconds for updateNetwork, 0.2s for one agent with transition sample interval 0.1s
         info_interval = 1.0     # Interval in seconds for updateInfo
 
         while True:
