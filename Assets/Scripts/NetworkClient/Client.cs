@@ -16,6 +16,7 @@ public class Client : MonoBehaviour
 
         //----test----
         NetManager.AddMsgListener("MsgTest", OnMsgTest);
+        NetManager.AddMsgListener("SampleActionResponseMsg", OnSampleActionResponseMsg);
         //Connect
         NetManager.Connect(SERVER_HOST, SERVER_PORT);
 
@@ -85,6 +86,7 @@ public class Client : MonoBehaviour
     {
         SampleActionRequestMsg msg = new SampleActionRequestMsg
         {
+            agent_id = id_agent,
             state = obs_array
         };
         // Await the PublishAsync method to complete asynchronously
@@ -103,7 +105,29 @@ public class Client : MonoBehaviour
         // Await the PublishAsync method to complete asynchronously
         NetManager.Send(msg);
     }
+    //----------------------------------Subscribers----------------------------------
+    public void OnSampleActionResponseMsg(MsgBase msgBase) 
+    {
+        SampleActionResponseMsg msg = (SampleActionResponseMsg)msgBase;
 
+        int agent_id = msg.agent_id;
+        List<float> floatList = new List<float>();
+        foreach (var value in msg.action)
+        {
+            floatList.Add(value);
+        }
+        if (AgentManager.Instance.idToAgentDict.ContainsKey(agent_id)) 
+        {
+            AgentManager.Instance.idToAgentDict[agent_id].SetExecuteAction(floatList);
+        }
+        else 
+        {
+            Debug.LogError("[ERROR][Client.cs] AgentManager.Instance.idToAgentDict does not contain" + agent_id);
+        }
+
+        
+        
+    }
     //---------------------------------------Test------------------------------------ 
     public void OnTestSendTrainsitionMsgClicked() 
     {

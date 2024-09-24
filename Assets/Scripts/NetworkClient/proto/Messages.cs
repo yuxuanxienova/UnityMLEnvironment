@@ -25,12 +25,14 @@ public class TransitionMsg : MsgBase
 public class SampleActionRequestMsg : MsgBase
 {
     public SampleActionRequestMsg() { protoName = "SampleActionRequestMsg"; }
+    public int agent_id;
     public float[] state;
 }
 
 public class SampleActionResponseMsg : MsgBase
 {
     public SampleActionResponseMsg() { protoName = "SampleActionResponseMsg"; }
+    public int agent_id;
     public float[] action;
 }
 

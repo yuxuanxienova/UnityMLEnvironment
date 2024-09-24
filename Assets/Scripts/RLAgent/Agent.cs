@@ -40,7 +40,7 @@ public class Agent : MonoBehaviour
         nextId++; // Increment the static counter for the next agent
 
         // Add this agent to the AgentManager dictionary
-        // AgentManager.Instance.AddAgentToDict(id, this);
+        AgentManager.Instance.AddAgentToDict(id, this);
 
         //Register the listener for the response message
         NetManager.AddMsgListener("SampleActionResponseMsg", OnSampleActionResponse);

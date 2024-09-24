@@ -56,12 +56,15 @@ class Trainner:
             if(state.shape[0]==self.state_dim and action.shape[0]==self.action_dim and next_state.shape[0]==self.state_dim):
                 self.agent.memory.put(transition)
         def SampleActionRequestMsgHandler(client:ClientState, msg_base):
-            print("[Msg Received][client:{0}]SampleActionMsg".format(client.client_address) + str(msg_base.state))
+            print("[Msg Received][client:{0}][agent_id:{1}]SampleActionMsg".format(client.client_address,msg_base.agent_id) + str(msg_base.state))
+            agent_id = msg_base.agent_id
             state = np.array(msg_base.state)
+            
             action = self.agent.get_action(state,train=False)
             response = SampleActionResponseMsg()
+            response.agent_id = agent_id
             response.action = action.tolist()
-            print("[Msg Send][client:{0}]SampleActionResponseMsg".format(client.client_address) + str(response.action))
+            print("[Msg Send][client:{0}][agent_id:{1}]SampleActionResponseMsg".format(client.client_address,agent_id) + str(response.action))
             self.server.send(client, response)  
         def EpisodicRewardMsgHandler(client:ClientState, msg_base):
             reward = np.array(msg_base.data)

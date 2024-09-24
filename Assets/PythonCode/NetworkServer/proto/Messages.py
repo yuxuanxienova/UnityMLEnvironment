@@ -27,11 +27,13 @@ class SampleActionRequestMsg(MsgBase):
     def __init__(self):
         super().__init__()
         self.protoName = "SampleActionRequestMsg"
+        self.agent_id = -1
         self.state = []
 class SampleActionResponseMsg(MsgBase):
     def __init__(self):
         super().__init__()
         self.protoName = "SampleActionResponseMsg"
+        self.agent_id = -1
         self.action = []
 class EpisodicRewardMsg(MsgBase):
     def __init__(self):
