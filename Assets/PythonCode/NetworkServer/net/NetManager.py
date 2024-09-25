@@ -9,6 +9,7 @@ from net.ClientState import ClientState
 from net.ByteArray import ByteArray
 from net.MsgBase import MsgBase
 from proto.Messages import MsgPing, MsgPong , MsgTest
+from prometheus_client import Counter, Gauge, Histogram, start_http_server
 # Define listener types
 EventHandler = Callable[[str], None]
 MsgHandler = Callable[[MsgBase], None]
@@ -35,6 +36,15 @@ class NetManagerServer:
         self.add_event_handler("check_ping",self.check_ping)
         
         self.add_msg_handler("MsgPing",self.handle_msg_ping)
+        
+        # Prometheus metrics
+        self.active_connections = Gauge('active_connections', 'Number of active connections')
+        self.messages_received = Counter('messages_received', 'Total number of messages received')
+        self.messages_sent = Counter('messages_sent', 'Total number of messages sent')
+        self.message_processing_time = Histogram('message_processing_time_seconds', 'Time spent processing messages')
+
+        # Start the Prometheus metrics HTTP server on port 8000
+        start_http_server(8000)
 
 #---------------------------------监听结构------------------------------------------
     #------------------------------1. 网络事件监听----------------------------------------
@@ -74,6 +84,7 @@ class NetManagerServer:
                 self.close(s)
                 # Since 'close' removes the client from the list,
                 # we break out of the loop to avoid iteration errors
+                self.active_connections.dec()  # Decrement active connections
                 break
     #-------------------------------2. 网络消息监听---------------------------------------------
     # Add message listener
@@ -110,6 +121,9 @@ class NetManagerServer:
 
         # Listen
         self.listen_fd.listen()
+        
+        #
+        self.active_connections.set(0)
         print("Server started successfully")
     def update(self):
         self.reset_check_read()
@@ -140,6 +154,8 @@ class NetManagerServer:
             state = ClientState(client_socket=client_fd)
             state.last_ping_time = self.get_time_stamp()
             self.clients[client_fd] = state
+            
+            self.active_connections.inc()  # Increment active connections
         except socket.error as ex:
             print(f"Accept failed: {ex}")
 
@@ -150,7 +166,7 @@ class NetManagerServer:
         
         #缓冲区不够，清除，若依旧还不够，只能返回
         #缓冲区长度只有1024， 单条协议超过缓冲区长度时会发生错误，根据需要调整长度
-        print("[INFO][Net Server][Client:{0}]Client Read Buffer Remain:{1}".format(client_state.client_address,client_read_buffer.remain))
+        # print("[INFO][Net Server][Client:{0}]Client Read Buffer Remain:{1}".format(client_state.client_address,client_read_buffer.remain))
         if client_read_buffer.remain <= 0:
             client_read_buffer.resize(client_read_buffer.capacity + 1024)
             self.on_receive_data(client_state)
@@ -159,15 +175,19 @@ class NetManagerServer:
         if client_read_buffer.remain <= 0:
             print("[ERROR][Net Server]Receive Fail, mabe msg length > buff capacity")
             self.close(client_state)
+            self.active_connections.dec()  # Decrement active connections
             return
        
         try:
             # Receive data
             data = client_fd.recv(client_read_buffer.remain)
-            # if not data:
-            #     print(f"Client disconnected: {client_fd.getpeername()}")
-            #     self.close(client_state)
-            #     return
+            # print("[INFO][NetManagerServer]data:{0}".format(data))
+            
+            # Check for disconnection, win系统下，客户端关闭连接时，会返回空数据
+            if not data:
+                print(f"Client disconnected: {client_fd.getpeername()}")
+                self.close(client_state)
+                return
             # Write data to buffer
             client_read_buffer.write(data, 0, len(data))
 
@@ -180,6 +200,7 @@ class NetManagerServer:
         except socket.error as ex:
             print(f"[ERROR][Net Server]Receive socket exception: {ex}")
             self.close(client_state)
+            self.active_connections.dec()  # Decrement active connections
 
     
     def close(self,state):
@@ -188,7 +209,11 @@ class NetManagerServer:
 
         # Close socket and remove from clients
         state.socket.close()
+        self.active_connections.dec()  # Decrement active connections
+        
         del self.clients[state.socket]
+        
+        
 
     
     def on_receive_data(self,state):
@@ -213,6 +238,7 @@ class NetManagerServer:
             if not proto_name:
                 print("Failed to decode message name")
                 self.close(state)
+                self.active_connections.dec()  # Decrement active connections
                 return
 
             read_buffer.read_idx += name_count
@@ -221,6 +247,9 @@ class NetManagerServer:
             body_count = body_length - name_count
             msg_base = MsgBase.decode(proto_name, read_buffer.bytes, read_buffer.read_idx, body_count)
             read_buffer.read_idx += body_count
+            
+            # Start a timer to measure message processing time
+            start_time = time.time()
 
             # Handle message
             # print(f"Received message: {proto_name}")
@@ -229,6 +258,12 @@ class NetManagerServer:
                 self.fire_msg(proto_name, state , msg_base)
             else:
                 print(f"No handler for message: {proto_name}")
+                
+            # Update metrics
+            self.messages_received.inc()
+            # Record the processing time
+            elapsed_time = time.time() - start_time
+            self.message_processing_time.observe(elapsed_time)
 
             # Move buffer if necessary
             read_buffer.check_and_move_bytes()
@@ -265,6 +300,9 @@ class NetManagerServer:
         except socket.error as ex:
             print(f"Socket closed on sendall: {ex}")
             self.close(cs)
+            self.active_connections.dec()# Decrement active connections
+        
+        self.messages_sent.inc()
 
     @staticmethod
     def get_time_stamp():
@@ -273,7 +311,7 @@ if __name__ == "__main__":
     SERVER_PORT = 65432;
     server = NetManagerServer()
     
-    def handle_msg_test(msg_base:MsgBase):
+    def handle_msg_test(client_state:ClientState,msg_base:MsgBase):
         print("MsgTest"+msg_base.str + str(msg_base.num))
     server.add_msg_handler("MsgTest",handle_msg_test)
     

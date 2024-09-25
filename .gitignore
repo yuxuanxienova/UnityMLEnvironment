@@ -6,6 +6,7 @@ ProjectSettings/
 Temp/
 Build/
 Assets/TextMesh Pro/
+Assets/PythonCode/Trainner/saved_model/
 *.meta
 .vs/
 .vscode/

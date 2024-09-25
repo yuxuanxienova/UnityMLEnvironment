@@ -102,7 +102,7 @@ class Trainner:
                 self.updateInfo(None)
                 last_info_update = current_time  # Reset the timer
 
-            time.sleep(0.01)  # Sleep briefly to prevent high CPU usage
+            time.sleep(0.001)  # Sleep briefly to prevent high CPU usage
             
 
     def updateNetwork(self,event):
